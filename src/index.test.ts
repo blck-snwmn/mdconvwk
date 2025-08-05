@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import app from "./index";
 
 // Mock fetch globally
@@ -62,9 +62,7 @@ describe("API Routes", () => {
 				text: async () => mockHtml,
 			});
 
-			mockAI.toMarkdown.mockResolvedValueOnce([
-				{ data: mockMarkdown },
-			]);
+			mockAI.toMarkdown.mockResolvedValueOnce([{ data: mockMarkdown }]);
 
 			const res = await app.request(
 				"/html?url=https://example.com",
@@ -94,7 +92,7 @@ describe("API Routes", () => {
 			);
 
 			expect(res.status).toBe(404);
-			const json = await res.json() as { error: string; status: number };
+			const json = (await res.json()) as { error: string; status: number };
 			expect(json.error).toContain("Failed to fetch");
 			expect(json.error).toContain("Not Found");
 		});
@@ -113,7 +111,7 @@ describe("API Routes", () => {
 			);
 
 			expect(res.status).toBe(500);
-			const json = await res.json() as { error: string; status: number };
+			const json = (await res.json()) as { error: string; status: number };
 			expect(json.error).toContain("Failed to fetch");
 		});
 
@@ -133,7 +131,7 @@ describe("API Routes", () => {
 			);
 
 			expect(res.status).toBe(400);
-			const json = await res.json() as { error: string; status: number };
+			const json = (await res.json()) as { error: string; status: number };
 			expect(json.error).toBe("Only HTML content is supported");
 		});
 
@@ -155,7 +153,7 @@ describe("API Routes", () => {
 			);
 
 			expect(res.status).toBe(413);
-			const json = await res.json() as { error: string; status: number };
+			const json = (await res.json()) as { error: string; status: number };
 			expect(json.error).toBe("Content too large. Maximum size is 10MB");
 		});
 
@@ -177,7 +175,7 @@ describe("API Routes", () => {
 			);
 
 			expect(res.status).toBe(500);
-			const json = await res.json() as { error: string; status: number };
+			const json = (await res.json()) as { error: string; status: number };
 			expect(json.error).toBe("Failed to convert HTML to Markdown");
 		});
 
@@ -198,13 +196,16 @@ describe("API Routes", () => {
 			);
 
 			expect(res.status).toBe(500);
-			const json = await res.json() as { error: string; status: number };
+			const json = (await res.json()) as { error: string; status: number };
 			expect(json.error).toBe("Failed to convert HTML to Markdown");
 		});
 
 		// タイムアウトのテスト
 		it("should return 504 on timeout", async () => {
-			const timeoutError = new DOMException("The operation was aborted", "AbortError");
+			const timeoutError = new DOMException(
+				"The operation was aborted",
+				"AbortError",
+			);
 			mockFetch.mockRejectedValueOnce(timeoutError);
 
 			const res = await app.request(
@@ -214,7 +215,7 @@ describe("API Routes", () => {
 			);
 
 			expect(res.status).toBe(504);
-			const json = await res.json() as { error: string; status: number };
+			const json = (await res.json()) as { error: string; status: number };
 			expect(json.error).toBe("Request timeout");
 		});
 
@@ -229,7 +230,7 @@ describe("API Routes", () => {
 			);
 
 			expect(res.status).toBe(500);
-			const json = await res.json() as { error: string; status: number };
+			const json = (await res.json()) as { error: string; status: number };
 			expect(json.error).toBe("Internal server error while processing request");
 		});
 
@@ -242,9 +243,7 @@ describe("API Routes", () => {
 				text: async () => "<h1>Test</h1>",
 			});
 
-			mockAI.toMarkdown.mockResolvedValueOnce([
-				{ data: "# Test" },
-			]);
+			mockAI.toMarkdown.mockResolvedValueOnce([{ data: "# Test" }]);
 
 			const res = await app.request(
 				"/html?url=https://example.com",
@@ -253,7 +252,9 @@ describe("API Routes", () => {
 			);
 
 			expect(res.status).toBe(200);
-			expect(res.headers.get("Cache-Control")).toBe("public, max-age=3600, s-maxage=86400");
+			expect(res.headers.get("Cache-Control")).toBe(
+				"public, max-age=3600, s-maxage=86400",
+			);
 		});
 	});
 });
