@@ -1,28 +1,43 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import app from "./index";
+import { env, fetchMock } from "cloudflare:test";
+import {
+	afterEach,
+	beforeAll,
+	beforeEach,
+	describe,
+	expect,
+	it,
+	vi,
+} from "vitest";
+import app from "../src/index";
 
-// Mock fetch globally
-const mockFetch = vi.fn();
-(globalThis as any).fetch = mockFetch;
-
-// Mock AI binding
-const mockAI = {
-	toMarkdown: vi.fn(),
-};
-
-const mockEnv = {
-	AI: mockAI,
+type ConversionResponse = {
+	name: string;
+	mimeType: string;
+	format: "markdown";
+	tokens: number;
+	data: string;
 };
 
 describe("API Routes", () => {
 	describe("GET /html", () => {
+		beforeAll(() => {
+			// Activate fetch mocking
+			fetchMock.activate();
+			fetchMock.disableNetConnect();
+		});
+
 		beforeEach(() => {
 			vi.clearAllMocks();
 		});
 
+		afterEach(() => {
+			// Ensure all mocks were called
+			fetchMock.assertNoPendingInterceptors();
+		});
+
 		// 既存のテストケース
 		it("should return 400 when URL parameter is missing", async () => {
-			const res = await app.request("/html", {}, mockEnv);
+			const res = await app.request("/html", {}, env);
 			expect(res.status).toBe(400);
 			const json = await res.json();
 			expect(json).toHaveProperty("error", "URL parameter is required");
@@ -30,7 +45,7 @@ describe("API Routes", () => {
 		});
 
 		it("should return 400 for invalid URL", async () => {
-			const res = await app.request("/html?url=not-a-url", {}, mockEnv);
+			const res = await app.request("/html?url=not-a-url", {}, env);
 			expect(res.status).toBe(400);
 			const json = await res.json();
 			expect(json).toHaveProperty(
@@ -41,7 +56,7 @@ describe("API Routes", () => {
 		});
 
 		it("should return 400 for non-HTTP(S) URLs", async () => {
-			const res = await app.request("/html?url=ftp://example.com", {}, mockEnv);
+			const res = await app.request("/html?url=ftp://example.com", {}, env);
 			expect(res.status).toBe(400);
 			const json = await res.json();
 			expect(json).toHaveProperty(
@@ -55,40 +70,57 @@ describe("API Routes", () => {
 			const mockHtml = "<h1>Test</h1><p>Content</p>";
 			const mockMarkdown = "# Test\n\nContent";
 
-			mockFetch.mockResolvedValueOnce({
-				ok: true,
-				status: 200,
-				headers: new Headers({ "Content-Type": "text/html; charset=utf-8" }),
-				text: async () => mockHtml,
+			fetchMock
+				.get("https://example.com")
+				.intercept({ path: "/" })
+				.reply(200, mockHtml, {
+					headers: { "Content-Type": "text/html; charset=utf-8" },
+				});
+
+			// Mock toMarkdown to return array response
+			env.AI.toMarkdown = vi.fn().mockImplementation(async (files) => {
+				// Check if it's array input (our implementation uses array)
+				if (Array.isArray(files)) {
+					return [
+						{
+							name: "example.com.html",
+							mimeType: "text/plain",
+							format: "markdown" as const,
+							tokens: 100,
+							data: mockMarkdown,
+						},
+					];
+				}
+				// Fallback for single file input
+				return {
+					name: "example.com.html",
+					mimeType: "text/plain",
+					format: "markdown" as const,
+					tokens: 100,
+					data: mockMarkdown,
+				};
 			});
 
-			mockAI.toMarkdown.mockResolvedValueOnce([{ data: mockMarkdown }]);
-
-			const res = await app.request(
-				"/html?url=https://example.com",
-				{},
-				mockEnv,
-			);
+			const res = await app.request("/html?url=https://example.com", {}, env);
 
 			expect(res.status).toBe(200);
 			expect(res.headers.get("Content-Type")).toBe("text/plain; charset=UTF-8");
 			const text = await res.text();
 			expect(text).toBe(mockMarkdown);
-			expect(mockFetch).toHaveBeenCalledWith("https://example.com");
+			// fetchMock automatically verifies the request was made
 		});
 
 		// fetchエラーのテスト
 		it("should return 404 when URL is not found", async () => {
-			mockFetch.mockResolvedValueOnce({
-				ok: false,
-				status: 404,
-				statusText: "Not Found",
-			});
+			fetchMock
+				.get("https://example.com")
+				.intercept({ path: "/notfound" })
+				.reply(404, "");
 
 			const res = await app.request(
 				"/html?url=https://example.com/notfound",
 				{},
-				mockEnv,
+				env,
 			);
 
 			expect(res.status).toBe(404);
@@ -98,16 +130,15 @@ describe("API Routes", () => {
 		});
 
 		it("should return 500 when server error occurs", async () => {
-			mockFetch.mockResolvedValueOnce({
-				ok: false,
-				status: 500,
-				statusText: "Internal Server Error",
-			});
+			fetchMock
+				.get("https://example.com")
+				.intercept({ path: "/error" })
+				.reply(500, "");
 
 			const res = await app.request(
 				"/html?url=https://example.com/error",
 				{},
-				mockEnv,
+				env,
 			);
 
 			expect(res.status).toBe(500);
@@ -117,17 +148,17 @@ describe("API Routes", () => {
 
 		// 非HTMLコンテンツのテスト
 		it("should return 400 for non-HTML content", async () => {
-			mockFetch.mockResolvedValueOnce({
-				ok: true,
-				status: 200,
-				headers: new Headers({ "Content-Type": "application/json" }),
-				text: async () => '{"test": "data"}',
-			});
+			fetchMock
+				.get("https://api.example.com")
+				.intercept({ path: "/data.json" })
+				.reply(200, '{"test": "data"}', {
+					headers: { "Content-Type": "application/json" },
+				});
 
 			const res = await app.request(
 				"/html?url=https://api.example.com/data.json",
 				{},
-				mockEnv,
+				env,
 			);
 
 			expect(res.status).toBe(400);
@@ -139,17 +170,17 @@ describe("API Routes", () => {
 		it("should return 413 for content too large", async () => {
 			const largeContent = "x".repeat(11 * 1024 * 1024); // 11MB
 
-			mockFetch.mockResolvedValueOnce({
-				ok: true,
-				status: 200,
-				headers: new Headers({ "Content-Type": "text/html" }),
-				text: async () => largeContent,
-			});
+			fetchMock
+				.get("https://example.com")
+				.intercept({ path: "/large" })
+				.reply(200, largeContent, {
+					headers: { "Content-Type": "text/html" },
+				});
 
 			const res = await app.request(
 				"/html?url=https://example.com/large",
 				{},
-				mockEnv,
+				env,
 			);
 
 			expect(res.status).toBe(413);
@@ -159,20 +190,23 @@ describe("API Routes", () => {
 
 		// AI変換エラーのテスト
 		it("should return 500 when AI conversion fails with empty result", async () => {
-			mockFetch.mockResolvedValueOnce({
-				ok: true,
-				status: 200,
-				headers: new Headers({ "Content-Type": "text/html" }),
-				text: async () => "<h1>Test</h1>",
+			fetchMock
+				.get("https://example.com")
+				.intercept({ path: "/" })
+				.reply(200, "<h1>Test</h1>", {
+					headers: { "Content-Type": "text/html" },
+				});
+
+			// Mock toMarkdown to return empty array
+			env.AI.toMarkdown = vi.fn().mockImplementation(async (files) => {
+				if (Array.isArray(files)) {
+					return [];
+				}
+				// This shouldn't happen in practice, but for completeness
+				return {} as ConversionResponse;
 			});
 
-			mockAI.toMarkdown.mockResolvedValueOnce([]);
-
-			const res = await app.request(
-				"/html?url=https://example.com",
-				{},
-				mockEnv,
-			);
+			const res = await app.request("/html?url=https://example.com", {}, env);
 
 			expect(res.status).toBe(500);
 			const json = (await res.json()) as { error: string; status: number };
@@ -180,20 +214,20 @@ describe("API Routes", () => {
 		});
 
 		it("should return 500 when AI conversion fails with null result", async () => {
-			mockFetch.mockResolvedValueOnce({
-				ok: true,
-				status: 200,
-				headers: new Headers({ "Content-Type": "text/html" }),
-				text: async () => "<h1>Test</h1>",
-			});
+			fetchMock
+				.get("https://example.com")
+				.intercept({ path: "/" })
+				.reply(200, "<h1>Test</h1>", {
+					headers: { "Content-Type": "text/html" },
+				});
 
-			mockAI.toMarkdown.mockResolvedValueOnce(null);
+			// Mock toMarkdown to return null for error handling test
+			// We need to force the return type for this error case
+			const mockToMarkdown = vi.fn().mockResolvedValue(null);
+			// Override the type to allow null return for testing
+			env.AI.toMarkdown = mockToMarkdown as typeof env.AI.toMarkdown;
 
-			const res = await app.request(
-				"/html?url=https://example.com",
-				{},
-				mockEnv,
-			);
+			const res = await app.request("/html?url=https://example.com", {}, env);
 
 			expect(res.status).toBe(500);
 			const json = (await res.json()) as { error: string; status: number };
@@ -206,12 +240,15 @@ describe("API Routes", () => {
 				"The operation was aborted",
 				"AbortError",
 			);
-			mockFetch.mockRejectedValueOnce(timeoutError);
+			fetchMock
+				.get("https://slow.example.com")
+				.intercept({ path: "/" })
+				.replyWithError(timeoutError);
 
 			const res = await app.request(
 				"/html?url=https://slow.example.com",
 				{},
-				mockEnv,
+				env,
 			);
 
 			expect(res.status).toBe(504);
@@ -221,13 +258,12 @@ describe("API Routes", () => {
 
 		// 予期しないエラーのテスト
 		it("should return 500 for unexpected errors", async () => {
-			mockFetch.mockRejectedValueOnce(new Error("Network error"));
+			fetchMock
+				.get("https://example.com")
+				.intercept({ path: "/" })
+				.replyWithError(new Error("Network error"));
 
-			const res = await app.request(
-				"/html?url=https://example.com",
-				{},
-				mockEnv,
-			);
+			const res = await app.request("/html?url=https://example.com", {}, env);
 
 			expect(res.status).toBe(500);
 			const json = (await res.json()) as { error: string; status: number };
@@ -236,20 +272,36 @@ describe("API Routes", () => {
 
 		// キャッシュヘッダーのテスト
 		it("should set proper cache headers on success", async () => {
-			mockFetch.mockResolvedValueOnce({
-				ok: true,
-				status: 200,
-				headers: new Headers({ "Content-Type": "text/html" }),
-				text: async () => "<h1>Test</h1>",
+			fetchMock
+				.get("https://example.com")
+				.intercept({ path: "/" })
+				.reply(200, "<h1>Test</h1>", {
+					headers: { "Content-Type": "text/html" },
+				});
+
+			// Mock toMarkdown for cache header test
+			env.AI.toMarkdown = vi.fn().mockImplementation(async (files) => {
+				if (Array.isArray(files)) {
+					return [
+						{
+							name: "example.com.html",
+							mimeType: "text/plain",
+							format: "markdown" as const,
+							tokens: 50,
+							data: "# Test",
+						},
+					];
+				}
+				return {
+					name: "example.com.html",
+					mimeType: "text/plain",
+					format: "markdown" as const,
+					tokens: 50,
+					data: "# Test",
+				};
 			});
 
-			mockAI.toMarkdown.mockResolvedValueOnce([{ data: "# Test" }]);
-
-			const res = await app.request(
-				"/html?url=https://example.com",
-				{},
-				mockEnv,
-			);
+			const res = await app.request("/html?url=https://example.com", {}, env);
 
 			expect(res.status).toBe(200);
 			expect(res.headers.get("Cache-Control")).toBe(
