@@ -36,3 +36,10 @@ lerna-debug.log*
 !.dev.vars.example
 .env*
 !.env.example
+
+# test
+coverage/
+*.coverage
+
+# typescript
+*.tsbuildinfo
