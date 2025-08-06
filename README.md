@@ -1,21 +1,46 @@
-```txt
-npm install
-npm run dev
+# mdconvwk
+
+HTML to Markdown converter using Cloudflare Workers API
+
+## Overview
+
+Fetches HTML content from a specified URL and converts it to Markdown format using Cloudflare AI.
+
+## Endpoint
+
+```
+GET /html?url={URL}
 ```
 
-```txt
-npm run deploy
+### Parameters
+
+- `url` (required): URL of the HTML page to convert
+
+### Response
+
+- Success: Markdown formatted text
+- Error: JSON error message
+
+## Development
+
+```bash
+# Install dependencies
+pnpm install
+
+# Start development server
+pnpm dev
+
+# Run tests
+pnpm test
+
+# Deploy
+pnpm deploy
 ```
 
-[For generating/synchronizing types based on your Worker configuration run](https://developers.cloudflare.com/workers/wrangler/commands/#types):
+## Tech Stack
 
-```txt
-npm run cf-typegen
-```
-
-Pass the `CloudflareBindings` as generics when instantiation `Hono`:
-
-```ts
-// src/index.ts
-const app = new Hono<{ Bindings: CloudflareBindings }>()
-```
+- Cloudflare Workers
+- Hono (Web framework)
+- Cloudflare AI (HTML to Markdown conversion)
+- TypeScript
+- Vitest (Testing)
