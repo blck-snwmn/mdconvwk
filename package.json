@@ -17,11 +17,12 @@
 		"hono": "^4.8.12"
 	},
 	"devDependencies": {
-		"@cloudflare/vitest-pool-workers": "0.8.71",
+		"@cloudflare/vitest-pool-workers": "0.16.10",
 		"oxfmt": "0.48.0",
 		"oxlint": "1.63.0",
 		"oxlint-tsgolint": "0.22.1",
 		"typescript": "5.9.3",
+		"vite": "6.4.2",
 		"vitest": "4.1.0",
 		"wrangler": "4.59.3"
 	}

@@ -1,6 +1,9 @@
-import { env, fetchMock } from "cloudflare:test";
+import { env as providedEnv } from "cloudflare:test";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { fetchMock } from "./fetch-mock";
 import app from "../src/index";
+
+const env = providedEnv as CloudflareBindings;
 
 type ConversionResponse = {
   name: string;
