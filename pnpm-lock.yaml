@@ -10,7 +10,7 @@ importers:
     dependencies:
       hono:
         specifier: ^4.8.12
-        version: 4.12.24
+        version: 4.12.25
     devDependencies:
       '@cloudflare/vitest-pool-workers':
         specifier: 0.8.71
@@ -1432,8 +1432,8 @@ packages:
   glob-to-regexp@0.4.1:
     resolution: {integrity: sha512-lkX1HJXwyMcprw/5YUZc2s7DrpAiHB21/V+E1rHUrVNokkvB6bqMzT0VfV6/86ZNabt1k14YOIaT7nDvOX3Iiw==}
 
-  hono@4.12.24:
-    resolution: {integrity: sha512-I36D1s+HgQc55KbhEr4iybfxv/9o1zdpw+XEM6dJa91LqQD0HCoSGdxpRJCZE+aavs87j4V3Ls2OJzq8C/U4iw==}
+  hono@4.12.25:
+    resolution: {integrity: sha512-2NFaIyNVgJmBs/ecmtGzlmluTFs5cHEWGTdu0t1HBwYzoGXOL5nUQBRMXsXWla5i4KkG//QMzVP88m1+I3fdAQ==}
     engines: {node: '>=16.9.0'}
 
   is-arrayish@0.3.2:
@@ -2665,7 +2665,7 @@ snapshots:
 
   glob-to-regexp@0.4.1: {}
 
-  hono@4.12.24: {}
+  hono@4.12.25: {}
 
   is-arrayish@0.3.2: {}
 
