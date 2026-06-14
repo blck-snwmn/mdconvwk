@@ -1,3 +1,1 @@
-declare module "cloudflare:test" {
-  interface ProvidedEnv extends CloudflareBindings {}
-}
+import "@cloudflare/vitest-pool-workers/types";
