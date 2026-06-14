@@ -1,6 +1,7 @@
-import { env, fetchMock } from "cloudflare:test";
+import { env } from "cloudflare:test";
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import app from "../src/index";
+import { fetchMock } from "./fetch-mock";
 
 type ConversionResponse = {
   name: string;
@@ -13,9 +14,7 @@ type ConversionResponse = {
 describe("API Routes", () => {
   describe("GET /html", () => {
     beforeAll(() => {
-      // Activate fetch mocking
       fetchMock.activate();
-      fetchMock.disableNetConnect();
     });
 
     beforeEach(() => {
