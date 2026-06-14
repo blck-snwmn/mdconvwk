@@ -1,7 +1,7 @@
 {
 	"name": "mdconvwk",
 	"type": "module",
-	"packageManager": "pnpm@9",
+	"packageManager": "pnpm@11",
 	"engines": {
 		"node": "24"
 	},
@@ -21,12 +21,13 @@
 		"hono": "^4.8.12"
 	},
 	"devDependencies": {
-		"@cloudflare/vitest-pool-workers": "0.8.71",
+		"@cloudflare/vitest-pool-workers": "0.16.14",
 		"oxfmt": "0.54.0",
 		"oxlint": "1.69.0",
 		"oxlint-tsgolint": "0.23.0",
 		"typescript": "6.0.3",
-		"vitest": "3.2.6",
+		"vite": "7.3.5",
+		"vitest": "4.1.8",
 		"wrangler": "4.99.0"
 	}
 }
