@@ -28,7 +28,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm --dangerously-allow-all-builds install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Type check
         run: pnpm typecheck
@@ -63,7 +63,7 @@ jobs:
           cache: 'pnpm'
 
       - name: Install dependencies
-        run: pnpm --dangerously-allow-all-builds install --frozen-lockfile
+        run: pnpm install --frozen-lockfile
 
       - name: Deploy to Cloudflare Workers
         run: pnpm run deploy
