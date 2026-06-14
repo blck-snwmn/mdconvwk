@@ -17,13 +17,6 @@ type MockEntry = InterceptOptions & {
   handler: () => Response | Promise<Response>;
 };
 
-const statusText = new Map([
-  [200, "OK"],
-  [400, "Bad Request"],
-  [404, "Not Found"],
-  [500, "Internal Server Error"],
-]);
-
 const entries: MockEntry[] = [];
 
 export const fetchMock = {
@@ -54,7 +47,6 @@ export const fetchMock = {
       return entry.handler();
     });
   },
-  disableNetConnect() {},
   assertNoPendingInterceptors() {
     const pending = entries.filter((entry) => !entry.used);
     entries.length = 0;
@@ -76,7 +68,6 @@ export const fetchMock = {
               handler: () =>
                 new Response(data, {
                   status,
-                  statusText: statusText.get(status),
                   headers: optionsArg.headers,
                 }),
             });

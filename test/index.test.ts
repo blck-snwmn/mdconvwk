@@ -14,9 +14,7 @@ type ConversionResponse = {
 describe("API Routes", () => {
   describe("GET /html", () => {
     beforeAll(() => {
-      // Activate fetch mocking
       fetchMock.activate();
-      fetchMock.disableNetConnect();
     });
 
     beforeEach(() => {
