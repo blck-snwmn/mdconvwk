@@ -26,7 +26,7 @@
 		"oxlint": "1.72.0",
 		"oxlint-tsgolint": "0.24.0",
 		"typescript": "6.0.3",
-		"vite": "8.1.2",
+		"vite": "8.1.3",
 		"vitest": "4.1.9",
 		"wrangler": "4.106.0"
 	}
