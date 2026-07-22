@@ -14,8 +14,7 @@
 		"lint": "oxlint --deny-warnings .",
 		"lint:fix": "oxlint --deny-warnings . --fix",
 		"fmt": "oxfmt --write src/ test/",
-		"fmt:check": "oxfmt --check src/ test/",
-		"typecheck": "tsc --noEmit"
+		"fmt:check": "oxfmt --check src/ test/"
 	},
 	"dependencies": {
 		"hono": "^4.8.12"
@@ -23,8 +22,8 @@
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "0.18.6",
 		"oxfmt": "0.59.0",
-		"oxlint": "1.74.0",
-		"oxlint-tsgolint": "0.25.0",
+		"oxlint": "1.75.0",
+		"oxlint-tsgolint": "7.0.2001",
 		"typescript": "7.0.2",
 		"vite": "8.1.5",
 		"vitest": "4.1.10",
