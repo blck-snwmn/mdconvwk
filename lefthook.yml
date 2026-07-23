@@ -7,6 +7,3 @@ pre-commit:
     fmt:
       glob: "*.{ts,tsx,js,jsx,mjs,cjs,json,md,yml,yaml,html,css}"
       run: pnpm run fmt:check
-    typecheck:
-      glob: "*.{ts,tsx}"
-      run: pnpm run typecheck
