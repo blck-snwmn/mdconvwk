@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       hono:
-        specifier: ^4.8.12
+        specifier: 4.12.31
         version: 4.12.31
     devDependencies:
       '@cloudflare/vitest-pool-workers':
