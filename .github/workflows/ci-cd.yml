@@ -1,6 +1,7 @@
 name: CI/CD
 
 on:
+  workflow_dispatch:
   push:
     paths-ignore:
       - README.md
@@ -43,7 +44,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Deploy
     needs: test-lint-format
-    if: github.ref == 'refs/heads/main'
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout
