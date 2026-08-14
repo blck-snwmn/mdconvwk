@@ -22,7 +22,7 @@
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "0.20.3",
 		"oxfmt": "0.62.0",
-		"oxlint": "1.77.0",
+		"oxlint": "1.78.0",
 		"oxlint-tsgolint": "7.0.2001",
 		"typescript": "7.0.2",
 		"vite": "8.2.1",
