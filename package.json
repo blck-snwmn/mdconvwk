@@ -20,7 +20,7 @@
 		"hono": "4.13.1"
 	},
 	"devDependencies": {
-		"@cloudflare/vitest-pool-workers": "0.20.3",
+		"@cloudflare/vitest-pool-workers": "0.21.0",
 		"oxfmt": "0.62.0",
 		"oxlint": "1.77.0",
 		"oxlint-tsgolint": "7.0.2001",
