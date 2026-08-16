@@ -17,7 +17,7 @@
 		"fmt:check": "oxfmt --check src/ test/"
 	},
 	"dependencies": {
-		"hono": "4.13.1"
+		"hono": "4.13.2"
 	},
 	"devDependencies": {
 		"@cloudflare/vitest-pool-workers": "0.21.2",
